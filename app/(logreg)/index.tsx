@@ -20,10 +20,10 @@ export default function Test(){
         <SafeAreaView style={styles.safearea}>
             <View style={styles.body}>
                 <View>
-                    <Text>Hello World</Text>
+                    <Text>Hello Marwan</Text>
                 </View>
                 <TouchableOpacity onPress={press}>
-                    <Text>Betton</Text>
+                    <Text>Button</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={testing}>
                     <Text>Testing Funciton</Text>
