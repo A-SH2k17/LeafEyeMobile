@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Alert, SafeAreaView,StyleSheet,Text, TextInput, TouchableOpacity} from "react-native";
 //import { styles } from "@/css/common_styles";
 
@@ -6,19 +6,30 @@ import { View, Alert, SafeAreaView,StyleSheet,Text, TextInput, TouchableOpacity}
 export default function Test(){
     const [textOut,setText] = useState("")
     const press = () =>{
-        Alert.alert(textOut)
+        console.log(textOut)
     }
 
+    useEffect(()=>{
+        console.log(textOut)
+    },[textOut])
+    
+    function testing(){
+        setText("ben")
+    }
     return (
-        <SafeAreaView style={styles.safeariea}>
-            <View>
-                <Text>Hello World</Text>
+        <SafeAreaView style={styles.safearea}>
+            <View style={styles.body}>
+                <View>
+                    <Text>Hello World</Text>
+                </View>
+                <TouchableOpacity onPress={press}>
+                    <Text>Betton</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={testing}>
+                    <Text>Testing Funciton</Text>
+                </TouchableOpacity>
+                <TextInput style={styles.input} onChangeText={setText}></TextInput>
             </View>
-            
-            <TouchableOpacity onPress={press}>
-                <Text>Betton</Text>
-            </TouchableOpacity>
-            <TextInput style={styles.input} onChangeText={setText}></TextInput>
         </SafeAreaView>
     )
 }
@@ -26,8 +37,12 @@ export default function Test(){
 
 
 const styles = StyleSheet.create({
-    'safeariea':{
+    'body':{
         backgroundColor:'red',
+    },
+    'safearea':{
+        flex:1,
+        backgroundColor:'azure',
     },
     'input':{
         backgroundColor:'white',
@@ -35,5 +50,5 @@ const styles = StyleSheet.create({
         marginHorizontal:'auto',
         padding:10,
         borderCurve:"circular",
-    }
+    }
 })
