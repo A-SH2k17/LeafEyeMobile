@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     },
     'safearea':{
         flex:1,
-        backgroundColor:'mediumslateblue',
+        backgroundColor:'skyblue',
     },
     'input':{
         backgroundColor:'ivory',
