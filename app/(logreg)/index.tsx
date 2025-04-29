@@ -38,14 +38,17 @@ export default function Test(){
 
 const styles = StyleSheet.create({
     'body':{
-        backgroundColor:'red',
+        //backgroundColor:'red',
+        flex:1,
+        justifyContent:'center',
+        alignItems:'flex-end',
     },
     'safearea':{
         flex:1,
         backgroundColor:'azure',
     },
     'input':{
-        backgroundColor:'Ivory',
+        backgroundColor:'ivory',
         width:"50%",
         marginHorizontal:90,
         padding:10,
