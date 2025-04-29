@@ -17,7 +17,7 @@ export default function Test(){
         setText("ben")
     }
     return (
-        <SafeAreaView style={styles.safearea}>
+        <SafeAreaView style={styles.safeariea}>
             <View style={styles.body}>
                 <View>
                     <Text>Hello World</Text>
@@ -38,9 +38,12 @@ export default function Test(){
 
 const styles = StyleSheet.create({
     'body':{
-        backgroundColor:'red',
+        //backgroundColor:'red',
+        flex:1,
+        justifyContent:'center',
+        alignItems:'center',
     },
-    'safearea':{
+    'safeariea':{
         flex:1,
         backgroundColor:'azure',
     },
@@ -50,5 +53,5 @@ const styles = StyleSheet.create({
         marginHorizontal:'auto',
         padding:10,
         borderCurve:"circular",
-    }
+    }
 })
