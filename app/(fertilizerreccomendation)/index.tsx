@@ -1,4 +1,4 @@
-// FertilizerRecommendation.jsx
+// SimplifiedFertilizerRecommendation.jsx
 import React, { useState } from 'react';
 import { 
   View, 
@@ -10,21 +10,14 @@ import {
   StyleSheet,
   Platform,
   TextInput,
-  Alert // Added missing import
+  Alert,
+  Modal
 } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-// SVG icons as XML strings
-const iconLeaf = `
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M11 20A7 7 0 0 1 4 13C4 9.25 7 6 11 7h1a8 8 0 0 0 8 8c0 4.75-3.25 7.75-7 7.75h-2z"/>
-  <path d="M6.59 11.41a4.07 4.07 0 0 0 0 5.66 4.07 4.07 0 0 0 5.66 0"/>
-  <path d="M5 10c4.58-3.25 6.25-3.17 15-5"/>
-</svg>
-`;
-
+// SVG icons as XML strings - simplified set
 const iconBack = `
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -33,7 +26,6 @@ const iconBack = `
 
 const iconFert = `
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Leaf shape with stem -->
   <path d="M20,4 C15,1 6,1 4,10 C2,19 10,22 18,16 C18,16 20,5 12,10 M4,10 C4,10 8,12 12,10 M12,10 C12,10 16,8 18,16 M12,10 L12,21"/>
 </svg>
 `;
@@ -41,6 +33,22 @@ const iconFert = `
 const iconDropdown = `
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <polyline points="6 9 12 15 18 9"></polyline>
+</svg>
+`;
+
+const iconSoil = `
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M2 22h20"/>
+  <path d="M5 13c.7-1.7 1.3-3.3 2-5 .6-1.5 1-3 3-3s2.4 1.5 3 3c.7 1.7 1.3 3.3 2 5 .6 1.5 1 3 3 3s2.4-1.5 3-3"/>
+</svg>
+`;
+
+const iconPlant = `
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M15 2c-1.35 4-4 6-8 6"/>
+  <path d="M17 8c4 0 6 2.65 6 4 0 1.35-2 4-6 4"/>
+  <path d="M9 10c-4 0-6 2.65-6 4 0 1.35 2 4 6 4"/>
+  <path d="M8 22l4-10 4 10"/>
 </svg>
 `;
 
@@ -56,27 +64,10 @@ const iconHumidity = `
 </svg>
 `;
 
-const iconSoil = `
+const iconLeaf = `
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M2 22h20"/>
-  <path d="M5 13c.7-1.7 1.3-3.3 2-5 .6-1.5 1-3 3-3s2.4 1.5 3 3c.7 1.7 1.3 3.3 2 5 .6 1.5 1 3 3 3s2.4-1.5 3-3"/>
-  <path d="M19 16c.7-1.7 1.3-3.3 2-5"/>
-</svg>
-`;
-
-const iconPlant = `
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M15 2c-1.35 4-4 6-8 6"/>
-  <path d="M17 8c4 0 6 2.65 6 4 0 1.35-2 4-6 4"/>
-  <path d="M9 10c-4 0-6 2.65-6 4 0 1.35 2 4 6 4"/>
-  <path d="M8 22l4-10 4 10"/>
-</svg>
-`;
-
-// Add new icons for the updated tab bar
-const iconMessage = `
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  <path d="M11 20A7 7 0 0 1 4 13C4 9.25 7 6 11 7h1a8 8 0 0 0 8 8c0 4.75-3.25 7.75-7 7.75h-2z"/>
+  <path d="M6.59 11.41a4.07 4.07 0 0 0 0 5.66 4.07 4.07 0 0 0 5.66 0"/>
 </svg>
 `;
 
@@ -94,6 +85,11 @@ const iconCamera = `
 </svg>
 `;
 
+const iconMessage = `
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+</svg>
+`;
 type RootStackParamList = {
   Home: undefined;
   FertilizerRecommendation: undefined;
@@ -115,10 +111,12 @@ const FertilizerRecommendation = ({ navigation }: FertilizerRecommendationProps)
   const [temperature, setTemperature] = useState('');
   const [humidity, setHumidity] = useState('');
   const [cropType, setCropType] = useState('');
-  const [showSoilDropdown, setShowSoilDropdown] = useState(false);
-  const [showCropDropdown, setShowCropDropdown] = useState(false);
   const [showResults, setShowResults] = useState(false);
   
+  // Modal state for improved dropdowns
+  const [soilModalVisible, setSoilModalVisible] = useState(false);
+  const [cropModalVisible, setCropModalVisible] = useState(false);
+
   // Sample soil types
   const soilTypes = [
     'Clay',
@@ -142,10 +140,9 @@ const FertilizerRecommendation = ({ navigation }: FertilizerRecommendationProps)
     'Fiddle Leaf Fig'
   ];
   
-  // This would come from your algorithm based on inputs
+  // Simplified fertilizer recommendation function
   const getFertilizerRecommendation = () => {
-    // Logic to determine best fertilizer
-    // This is a simplified example
+    // Use combination of inputs to determine recommendation
     if (soilType === 'Clay' && cropType === 'Tomato') {
       return {
         name: 'Super Tomato Boost',
@@ -174,13 +171,13 @@ const FertilizerRecommendation = ({ navigation }: FertilizerRecommendationProps)
   };
 
   const handleGenerateRecommendation = () => {
-    // Validate inputs
-    if (soilType && temperature && humidity && cropType) {
-      setShowResults(true);
-    } else {
-      // Use Alert instead of alert
+    // Simple validation
+    if (!soilType || !temperature || !humidity || !cropType) {
       Alert.alert('Missing Information', 'Please fill in all fields');
+      return;
     }
+    
+    setShowResults(true);
   };
 
   const resetForm = () => {
@@ -191,25 +188,90 @@ const FertilizerRecommendation = ({ navigation }: FertilizerRecommendationProps)
     setShowResults(false);
   };
 
+  // Simplified modal selection components
+  const SoilSelectionModal = () => (
+    <Modal
+      visible={soilModalVisible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setSoilModalVisible(false)}
+    >
+      <TouchableOpacity 
+        style={styles.modalOverlay} 
+        activeOpacity={1} 
+        onPress={() => setSoilModalVisible(false)}
+      >
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Select Soil Type</Text>
+          {soilTypes.map((soil, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.modalItem}
+              onPress={() => {
+                setSoilType(soil);
+                setSoilModalVisible(false);
+              }}
+            >
+              <Text style={styles.modalItemText}>{soil}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  );
+
+  const CropSelectionModal = () => (
+    <Modal
+      visible={cropModalVisible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setCropModalVisible(false)}
+    >
+      <TouchableOpacity 
+        style={styles.modalOverlay} 
+        activeOpacity={1} 
+        onPress={() => setCropModalVisible(false)}
+      >
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Select Plant Type</Text>
+          {cropTypes.map((crop, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.modalItem}
+              onPress={() => {
+                setCropType(crop);
+                setCropModalVisible(false);
+              }}
+            >
+              <Text style={styles.modalItemText}>{crop}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  );
+
   return (
     <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" backgroundColor="#3D7054" />
       
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <SvgXml xml={iconBack} width={24} height={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <View style={styles.titleContainer}>
-            <Text style={styles.headerTitle}>Fertilizer Recommendation</Text>
-            <Text style={styles.headerSubtitle}>Find the perfect fertilizer for your plants</Text>
-          </View>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation?.goBack()}
+        >
+          <SvgXml xml={iconBack} width={24} height={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <View style={styles.titleContainer}>
+          <Text style={styles.headerTitle}>Fertilizer Recommendation</Text>
+          <Text style={styles.headerSubtitle}>Find the perfect fertilizer for your plants</Text>
         </View>
       </View>
+
+      {/* Modals for Selection */}
+      <SoilSelectionModal />
+      <CropSelectionModal />
 
       <ScrollView 
         style={styles.content}
@@ -217,196 +279,158 @@ const FertilizerRecommendation = ({ navigation }: FertilizerRecommendationProps)
         showsVerticalScrollIndicator={false}
       >
         {!showResults ? (
-          <>
-            {/* Input Form */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Enter Plant Details</Text>
-              
-              {/* Soil Type Dropdown */}
-              <View style={styles.inputGroup}>
-                <View style={styles.inputLabel}>
-                  <SvgXml xml={iconSoil} width={22} height={22} color="#3D7054" />
-                  <Text style={styles.labelText}>Soil Type</Text>
-                </View>
-                <TouchableOpacity 
-                  style={styles.dropdownButton}
-                  onPress={() => setShowSoilDropdown(!showSoilDropdown)}
-                >
-                  <Text style={soilType ? styles.dropdownValue : styles.dropdownPlaceholder}>
-                    {soilType || 'Select soil type'}
-                  </Text>
-                  <SvgXml xml={iconDropdown} width={20} height={20} color="#3D7054" />
-                </TouchableOpacity>
-                
-                {showSoilDropdown && (
-                  <View style={styles.dropdownList}>
-                    {soilTypes.map((soil, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setSoilType(soil);
-                          setShowSoilDropdown(false);
-                        }}
-                      >
-                        <Text style={styles.dropdownItemText}>{soil}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
+          /* Input Form */
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Enter Plant Details</Text>
+            
+            {/* Soil Type Selector */}
+            <View style={styles.inputGroup}>
+              <View style={styles.inputLabel}>
+                <SvgXml xml={iconSoil} width={22} height={22} color="#3D7054" />
+                <Text style={styles.labelText}>Soil Type</Text>
               </View>
-              
-              {/* Temperature Input */}
-              <View style={styles.inputGroup}>
-                <View style={styles.inputLabel}>
-                  <SvgXml xml={iconTemp} width={22} height={22} color="#3D7054" />
-                  <Text style={styles.labelText}>Temperature (°F)</Text>
-                </View>
-                <TextInput
-                  style={styles.textInput}
-                  value={temperature}
-                  onChangeText={setTemperature}
-                  placeholder="Enter temperature"
-                  keyboardType="numeric"
-                  placeholderTextColor="#AAA"
-                />
-              </View>
-              
-              {/* Humidity Input */}
-              <View style={styles.inputGroup}>
-                <View style={styles.inputLabel}>
-                  <SvgXml xml={iconHumidity} width={22} height={22} color="#3D7054" />
-                  <Text style={styles.labelText}>Humidity (%)</Text>
-                </View>
-                <TextInput
-                  style={styles.textInput}
-                  value={humidity}
-                  onChangeText={setHumidity}
-                  placeholder="Enter humidity"
-                  keyboardType="numeric"
-                  placeholderTextColor="#AAA"
-                />
-              </View>
-              
-              {/* Crop Type Dropdown */}
-              <View style={styles.inputGroup}>
-                <View style={styles.inputLabel}>
-                  <SvgXml xml={iconPlant} width={22} height={22} color="#3D7054" />
-                  <Text style={styles.labelText}>Plant Type</Text>
-                </View>
-                <TouchableOpacity 
-                  style={styles.dropdownButton}
-                  onPress={() => setShowCropDropdown(!showCropDropdown)}
-                >
-                  <Text style={cropType ? styles.dropdownValue : styles.dropdownPlaceholder}>
-                    {cropType || 'Select plant type'}
-                  </Text>
-                  <SvgXml xml={iconDropdown} width={20} height={20} color="#3D7054" />
-                </TouchableOpacity>
-                
-                {showCropDropdown && (
-                  <View style={styles.dropdownList}>
-                    {cropTypes.map((crop, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setCropType(crop);
-                          setShowCropDropdown(false);
-                        }}
-                      >
-                        <Text style={styles.dropdownItemText}>{crop}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-              </View>
-              
-              {/* Submit Button */}
-              <TouchableOpacity
-                style={styles.recommendButton}
-                onPress={handleGenerateRecommendation}
+              <TouchableOpacity 
+                style={styles.selector}
+                onPress={() => setSoilModalVisible(true)}
               >
-                <SvgXml xml={iconFert} width={24} height={24} color="#FFFFFF" />
-                <Text style={styles.recommendButtonText}>Get Recommendation</Text>
+                <Text style={soilType ? styles.selectorValue : styles.selectorPlaceholder}>
+                  {soilType || 'Select soil type'}
+                </Text>
+                <SvgXml xml={iconDropdown} width={20} height={20} color="#3D7054" />
               </TouchableOpacity>
             </View>
-          </>
+            
+            {/* Temperature Input */}
+            <View style={styles.inputGroup}>
+              <View style={styles.inputLabel}>
+                <SvgXml xml={iconTemp} width={22} height={22} color="#3D7054" />
+                <Text style={styles.labelText}>Temperature (°F)</Text>
+              </View>
+              <TextInput
+                style={styles.textInput}
+                value={temperature}
+                onChangeText={setTemperature}
+                placeholder="Enter temperature"
+                keyboardType="numeric"
+                placeholderTextColor="#AAA"
+              />
+            </View>
+            
+            {/* Humidity Input */}
+            <View style={styles.inputGroup}>
+              <View style={styles.inputLabel}>
+                <SvgXml xml={iconHumidity} width={22} height={22} color="#3D7054" />
+                <Text style={styles.labelText}>Humidity (%)</Text>
+              </View>
+              <TextInput
+                style={styles.textInput}
+                value={humidity}
+                onChangeText={setHumidity}
+                placeholder="Enter humidity"
+                keyboardType="numeric"
+                placeholderTextColor="#AAA"
+              />
+            </View>
+            
+            {/* Crop Type Selector */}
+            <View style={styles.inputGroup}>
+              <View style={styles.inputLabel}>
+                <SvgXml xml={iconPlant} width={22} height={22} color="#3D7054" />
+                <Text style={styles.labelText}>Plant Type</Text>
+              </View>
+              <TouchableOpacity 
+                style={styles.selector}
+                onPress={() => setCropModalVisible(true)}
+              >
+                <Text style={cropType ? styles.selectorValue : styles.selectorPlaceholder}>
+                  {cropType || 'Select plant type'}
+                </Text>
+                <SvgXml xml={iconDropdown} width={20} height={20} color="#3D7054" />
+              </TouchableOpacity>
+            </View>
+            
+            {/* Submit Button */}
+            <TouchableOpacity
+              style={styles.recommendButton}
+              onPress={handleGenerateRecommendation}
+            >
+              <SvgXml xml={iconFert} width={24} height={24} color="#FFFFFF" />
+              <Text style={styles.recommendButtonText}>Get Recommendation</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
-          <>
-            {/* Results Section */}
-            <View style={styles.resultSection}>
-              <Text style={styles.sectionTitle}>Recommended Fertilizer</Text>
-              
-              {/* Summary of inputs */}
-              <View style={styles.inputSummary}>
-                <View style={styles.summaryItem}>
-                  <SvgXml xml={iconSoil} width={18} height={18} color="#3D7054" />
-                  <Text style={styles.summaryText}>{soilType}</Text>
-                </View>
-                <View style={styles.summaryItem}>
-                  <SvgXml xml={iconTemp} width={18} height={18} color="#3D7054" />
-                  <Text style={styles.summaryText}>{temperature}°F</Text>
-                </View>
-                <View style={styles.summaryItem}>
-                  <SvgXml xml={iconHumidity} width={18} height={18} color="#3D7054" />
-                  <Text style={styles.summaryText}>{humidity}%</Text>
-                </View>
-                <View style={styles.summaryItem}>
-                  <SvgXml xml={iconPlant} width={18} height={18} color="#3D7054" />
-                  <Text style={styles.summaryText}>{cropType}</Text>
-                </View>
+          /* Results Section */
+          <View style={styles.resultSection}>
+            <Text style={styles.sectionTitle}>Recommended Fertilizer</Text>
+            
+            {/* Summary of inputs */}
+            <View style={styles.inputSummary}>
+              <View style={styles.summaryItem}>
+                <SvgXml xml={iconSoil} width={18} height={18} color="#3D7054" />
+                <Text style={styles.summaryText}>{soilType}</Text>
               </View>
-              
-              {/* Fertilizer details */}
-              {(() => {
-                const recommendation = getFertilizerRecommendation();
-                return (
-                  <View style={styles.fertilizerCard}>
-                    <View style={styles.fertilizerHeader}>
-                      <SvgXml xml={iconFert} width={28} height={28} color="#3D7054" />
-                      <Text style={styles.fertilizerName}>{recommendation.name}</Text>
-                    </View>
-                    
-                    <View style={styles.npkContainer}>
-                      <View style={styles.npkBadge}>
-                        <Text style={styles.npkText}>NPK: {recommendation.npk}</Text>
-                      </View>
-                    </View>
-                    
-                    <View style={styles.fertilizerDetails}>
-                      <View style={styles.detailItem}>
-                        <Text style={styles.detailLabel}>Application Rate:</Text>
-                        <Text style={styles.detailValue}>{recommendation.applicationRate}</Text>
-                      </View>
-                      
-                      <View style={styles.detailItem}>
-                        <Text style={styles.detailLabel}>Frequency:</Text>
-                        <Text style={styles.detailValue}>{recommendation.frequency}</Text>
-                      </View>
-                      
-                      <View style={styles.detailNotes}>
-                        <Text style={styles.notesLabel}>Notes:</Text>
-                        <Text style={styles.notesText}>{recommendation.notes}</Text>
-                      </View>
+              <View style={styles.summaryItem}>
+                <SvgXml xml={iconTemp} width={18} height={18} color="#3D7054" />
+                <Text style={styles.summaryText}>{temperature}°F</Text>
+              </View>
+              <View style={styles.summaryItem}>
+                <SvgXml xml={iconHumidity} width={18} height={18} color="#3D7054" />
+                <Text style={styles.summaryText}>{humidity}%</Text>
+              </View>
+              <View style={styles.summaryItem}>
+                <SvgXml xml={iconPlant} width={18} height={18} color="#3D7054" />
+                <Text style={styles.summaryText}>{cropType}</Text>
+              </View>
+            </View>
+            
+            {/* Fertilizer details */}
+            {(() => {
+              const recommendation = getFertilizerRecommendation();
+              return (
+                <View style={styles.fertilizerCard}>
+                  <View style={styles.fertilizerHeader}>
+                    <SvgXml xml={iconFert} width={28} height={28} color="#3D7054" />
+                    <Text style={styles.fertilizerName}>{recommendation.name}</Text>
+                  </View>
+                  
+                  <View style={styles.npkContainer}>
+                    <View style={styles.npkBadge}>
+                      <Text style={styles.npkText}>NPK: {recommendation.npk}</Text>
                     </View>
                   </View>
-                );
-              })()}
-              
-              {/* Reset Button */}
-              <TouchableOpacity
-                style={styles.resetButton}
-                onPress={resetForm}
-              >
-                <Text style={styles.resetButtonText}>Try Different Parameters</Text>
-              </TouchableOpacity>
-            </View>
-          </>
+                  
+                  <View style={styles.fertilizerDetails}>
+                    <View style={styles.detailItem}>
+                      <Text style={styles.detailLabel}>Application Rate:</Text>
+                      <Text style={styles.detailValue}>{recommendation.applicationRate}</Text>
+                    </View>
+                    
+                    <View style={styles.detailItem}>
+                      <Text style={styles.detailLabel}>Frequency:</Text>
+                      <Text style={styles.detailValue}>{recommendation.frequency}</Text>
+                    </View>
+                    
+                    <View style={styles.detailNotes}>
+                      <Text style={styles.notesLabel}>Notes:</Text>
+                      <Text style={styles.notesText}>{recommendation.notes}</Text>
+                    </View>
+                  </View>
+                </View>
+              );
+            })()}
+            
+            {/* Reset Button */}
+            <TouchableOpacity
+              style={styles.resetButton}
+              onPress={resetForm}
+            >
+              <Text style={styles.resetButtonText}>Try Different Parameters</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </ScrollView>
       
-      {/* Tab Navigation - Updated to match paste.txt style */}
+      {/* Tab Navigation */}
       <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem}>
           <SvgXml xml={iconLeaf} width={24} height={24} color="#3D7054" />
@@ -418,7 +442,7 @@ const FertilizerRecommendation = ({ navigation }: FertilizerRecommendationProps)
           <Text style={styles.tabText}>AI Chat</Text>
         </TouchableOpacity>
         
-        {/* Placeholder for the center button */}
+        {/* Center space for diagnose button */}
         <View style={styles.tabItemCenter} />
         
         <TouchableOpacity style={[styles.tabItem, styles.activeTab]}>
@@ -445,23 +469,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F6FFF7',
-    paddingBottom: Platform.OS === 'ios' ? 0 : 0,
   },
   header: {
     backgroundColor: '#3D7054',
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    elevation: 4,
   },
   backButton: {
     marginRight: 12,
@@ -492,11 +513,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
-    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
+    elevation: 2,
   },
   sectionTitle: {
     fontSize: 18,
@@ -506,7 +527,6 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     marginBottom: 16,
-    position: 'relative',
   },
   inputLabel: {
     flexDirection: 'row',
@@ -528,7 +548,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
-  dropdownButton: {
+  selector: {
     backgroundColor: '#F5F5F5',
     borderRadius: 8,
     paddingHorizontal: 16,
@@ -539,40 +559,43 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  dropdownValue: {
+  selectorValue: {
     fontSize: 16,
     color: '#333333',
   },
-  dropdownPlaceholder: {
+  selectorPlaceholder: {
     fontSize: 16,
     color: '#AAA',
   },
-  dropdownList: {
-    position: 'absolute',
-    top: 80,
-    left: 0,
-    right: 0,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    zIndex: 10,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    maxHeight: 200,
+  // Modal styles for selection
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  dropdownItem: {
-    paddingHorizontal: 16,
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    maxHeight: '60%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 15,
+    color: '#3D7054',
+    textAlign: 'center',
+  },
+  modalItem: {
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#EEEEEE',
   },
-  dropdownItemText: {
+  modalItemText: {
     fontSize: 16,
-    color: '#333333',
+    color: '#333',
   },
   recommendButton: {
     backgroundColor: '#3D7054',
@@ -594,11 +617,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
-    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
+    elevation: 2,
   },
   inputSummary: {
     flexDirection: 'row',
@@ -702,7 +725,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  // Tab bar styles
   tabBar: {
     position: 'absolute',
     bottom: 0,
@@ -713,21 +735,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 10, // Adjust for bottom insets
-    paddingHorizontal: 16,
+    paddingBottom: Platform.OS === 'ios' ? 30 : 10,
     borderTopWidth: 1,
     borderTopColor: '#EEEEEE',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 8,
   },
   tabItem: {
     alignItems: 'center',
@@ -751,7 +766,6 @@ const styles = StyleSheet.create({
   activeTabText: {
     fontWeight: '700',
   },
-  // Styles for floating button
   identifyButton: {
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 50 : 30,
@@ -762,17 +776,11 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-      },
-      android: {
-        elevation: 5,
-      },
-    }),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
   },
   identifyText: {
     position: 'absolute',
@@ -784,7 +792,4 @@ const styles = StyleSheet.create({
   }
 });
 
-// Wrap component with SafeAreaProvider in your app entry
-// import { SafeAreaProvider } from 'react-native-safe-area-context';
-// <SafeAreaProvider><LeafEyeMainMenu /></SafeAreaProvider>
 export default FertilizerRecommendation;
